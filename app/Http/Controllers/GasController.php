@@ -97,9 +97,34 @@ class GasController extends Controller
      * @param  \App\Models\gas  $gas
      * @return \Illuminate\Http\Response
      */
-    public function edit(gas $gas)
-    {
-        //
+    public function edit(Request $request , $id)
+    {   $date = new DateTime();
+        $updated_at = $date->getTimestamp();
+        $gas_data = $request->only(['type','price']);
+        $gas = Gas::find($id);
+        if($gas){
+            if(isset($gas_data['type'])){
+                $gas->type = $gas_data['type'];
+            };
+
+            if(isset($gas_data['price'])){
+                $gas->price = $gas_data['price'];
+            };
+            $gas->updated_at = $updated_at;
+            $gas->save();
+
+            return $this->data['result'][] = [
+                'id'=>$gas->id,
+                'type'=>$gas->type,
+                'price'=>$gas->price,
+                'updated_at'=>$gas->updated_at
+            ];
+
+
+        }else{
+            return $this->data['error'] = 'Campos não informados';
+        }
+
     }
 
     /**
@@ -120,8 +145,8 @@ class GasController extends Controller
      * @param  \App\Models\gas  $gas
      * @return \Illuminate\Http\Response
      */
-    public function destroy(gas $gas)
+    public function destroy($id)
     {
-        //
+        $gas = Gas::delete($id);
     }
 }
