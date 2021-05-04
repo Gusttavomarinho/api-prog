@@ -146,7 +146,8 @@ class GasController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function destroy($id)
-    {
-        $gas = Gas::delete($id);
+    {   
+        $gas = Gas::find($id);
+        $gas->delete();
     }
 }
