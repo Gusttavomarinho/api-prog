@@ -26,3 +26,12 @@ Route::get('/gas',[GasController::class,'index']);
 //Rotas POST
 
 Route::post('/gas',[GasController::class,'create']);
+
+////Rotas PUT
+
+Route::put('/gas/{id}',[GasController::class,'edit']);
+
+////Rotas DELETE
+
+Route::delete('/gas/{id}',[GasController::class,'destroy']);
+
