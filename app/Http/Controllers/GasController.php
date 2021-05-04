@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\gas;
+use DateTime;
 use Illuminate\Http\Request;
 
 class GasController extends Controller
@@ -12,9 +13,30 @@ class GasController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    private $data = [
+        'error'=>'',
+        'result'=>[]
+    ];
+
     public function index()
+        
     {
-        //
+        $gas = Gas::all();
+
+        if($gas){
+            foreach($gas as $g){
+                $this->data['result'][] = [
+                    'id'=>$g->id,
+                    'type'=>$g->type,
+                    'price'=>$g->price,
+                    'created_at'=>$g->created_at,
+                    'update_at'=>$g->update_at
+                ];
+            }
+        }
+
+        return $this->data;
+
     }
 
     /**
@@ -22,9 +44,29 @@ class GasController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
-    {
-        //
+    public function create(Request $request)
+    {   
+        $date = new DateTime();
+        $type = $request->input('type');
+        $price = $request->input('price');
+        $created_at = $date->getTimestamp();
+
+        if($type && $price){
+            $gas = new Gas();
+            $gas->type = $type;
+            $gas->price = $price;
+            $gas->created_at = $created_at;
+            $gas->save();
+
+            return $this->data['result'][] = [
+                'id'=>$gas->id,
+                'type'=>$gas->type,
+                'price'=>$gas->price,
+                'created_at'=>$gas->created_at
+            ];
+        }else{
+            return $this->data['error'] = 'Campos não informados';
+        }
     }
 
     /**
