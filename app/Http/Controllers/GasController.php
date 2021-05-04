@@ -70,25 +70,26 @@ class GasController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
      * Display the specified resource.
      *
      * @param  \App\Models\gas  $gas
      * @return \Illuminate\Http\Response
      */
-    public function show(gas $gas)
+    public function show($id)
     {
-        //
+        $gas = Gas::find($id);
+        if($gas){
+            $this->data['result'][] = [
+                'id'=>$gas->id,
+                'type'=>$gas->type,
+                'price'=>$gas->price,
+                'created_at'=>$gas->created_at,
+                'updated_at'=>$gas->updated_at
+            ];
+            return $this->data;
+        }else{
+            return $this->data['error'] = 'ID não encontrado';
+        }
     }
 
     /**

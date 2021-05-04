@@ -21,7 +21,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 //Rotas GET
 
 Route::get('/gas',[GasController::class,'index']);
-
+Route::get('/gas/{id}',[GasController::class,'show']);
 
 //Rotas POST
 
