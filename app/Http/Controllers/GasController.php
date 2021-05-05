@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Validator;
+
 use App\Models\gas;
 use DateTime;
 use Illuminate\Http\Request;
@@ -49,12 +51,20 @@ class GasController extends Controller
         $date = new DateTime();
         $type = $request->input('type');
         $price = $request->input('price');
+        $qtd = $request->input('qtd');
         $created_at = $date->getTimestamp();
 
-        if($type && $price){
+        $validator = Validator::make($request->all(), [
+            'type' => 'required|string',
+            'price' => 'required|numeric',
+            'qtd' => 'required|numeric'
+        ]);
+
+        if(!$validator->fails()){
             $gas = new Gas();
             $gas->type = $type;
             $gas->price = $price;
+            $gas->qtd = $qtd;
             $gas->created_at = $created_at;
             $gas->save();
 
@@ -62,10 +72,11 @@ class GasController extends Controller
                 'id'=>$gas->id,
                 'type'=>$gas->type,
                 'price'=>$gas->price,
+                'qtd'=>$gas->qtd,
                 'created_at'=>$gas->created_at
             ];
         }else{
-            return $this->data['error'] = 'Campos não informados';
+            return $this->data['error'] = $validator->errors()->first();
         }
     }
 
@@ -99,45 +110,48 @@ class GasController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function edit(Request $request , $id)
-    {   $date = new DateTime();
-        $updated_at = $date->getTimestamp();
-        $gas_data = $request->only(['type','price']);
-        $gas = Gas::find($id);
-        if($gas){
-            if(isset($gas_data['type'])){
-                $gas->type = $gas_data['type'];
-            };
+    {   
+        $validator = Validator::make($request->all(), [
+            'type' => 'string',
+            'price' => 'numeric',
+            'qtd' => 'numeric'
+        ]);
 
-            if(isset($gas_data['price'])){
-                $gas->price = $gas_data['price'];
-            };
-            $gas->updated_at = $updated_at;
-            $gas->save();
+        if(!$validator->fails()){
+            $date = new DateTime();
+            $updated_at = $date->getTimestamp();
+            $gas_data = $request->only(['type','price','qtd']);
+            $gas = Gas::find($id);    
+    
+            if($gas){
+                if(isset($gas_data['type'])){
+                    $gas->type = $gas_data['type'];
+                };
+    
+                if(isset($gas_data['price'])){
+                    $gas->price = $gas_data['price'];
+                };
+    
+                if(isset($gas_data['qtd'])){
+                    $gas->qtd = $gas_data['qtd'];
+                };
 
-            return $this->data['result'][] = [
-                'id'=>$gas->id,
-                'type'=>$gas->type,
-                'price'=>$gas->price,
-                'updated_at'=>$gas->updated_at
-            ];
-
-
-        }else{
-            return $this->data['error'] = 'Campos não informados';
+                $gas->updated_at = $updated_at;
+                $gas->save();
+    
+                return $this->data['result'][] = [
+                    'id'=>$gas->id,
+                    'type'=>$gas->type,
+                    'price'=>$gas->price,
+                    'qtd'=>$gas->qtd,
+                    'updated_at'=>$gas->updated_at
+                ];
+            } else {
+                return $this->data['error'] = 'ID não encontrado';
+            }
+        } else {
+            return $this->data['error'] = $validator->errors()->first();
         }
-
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\gas  $gas
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, gas $gas)
-    {
-        //
     }
 
     /**
@@ -149,15 +163,27 @@ class GasController extends Controller
     public function destroy($id)
     {   
         $gas = Gas::find($id);
-        $gas->delete();
+        if($gas) {
+            $gas->delete();
+        } else {
+            return $this->data['error'] = 'ID não encontrado';
+        }
     }
 // # iniciado depois
-    public function sumQtd(Request $request) {
-        $gas = Gas::find($request['id']);
+    public function sumQtd(Request $request, $id) {
+        $gas = Gas::find($id);
+        $validator = Validator::make($request->all(), [
+            'qtd' => 'required|numeric'
+        ]);
         $qtd = $request->only(['id','qtd']);
         //print_r($qtd);
         //print_r($request['id']);
-        if($gas){
+
+        if(is_null($gas)) {
+            return $this->data['error'] = 'ID não encontrado';
+        }
+
+        if(!$validator->fails()){
             $gas->qtd = $gas->qtd + $qtd['qtd'];
             $gas->save();
             $data = [
@@ -168,26 +194,36 @@ class GasController extends Controller
                 'updated_at'=>$gas->updated_at 
             ];
             return response()->json($data);
+        } else {
+            return $this->data['error'] = $validator->errors()->first();
         }
-
     }
 
-        public function subQtd(Request $request) {
-            $gas = Gas::find($request['id']);
-            $qtd = $request->only(['id','qtd']);
-            //print_r($qtd);
-            //print_r($request['id']);
-            if($gas){
-                $gas->qtd = $gas->qtd - $qtd['qtd'];
-                $gas->save();
-                $data = [
-                    'id'=>$gas->id,
-                    'type'=>$gas->type,
-                    'price'=>$gas->price,
-                    'qtd'=>$gas->qtd,
-                    'updated_at'=>$gas->updated_at 
-                ];
-                return response()->json($data);
-            }
+    public function subQtd(Request $request, $id) {
+        $gas = Gas::find($id);
+        $validator = Validator::make($request->all(), [
+            'qtd' => 'required|numeric'
+        ]);
+        $qtd = $request->only(['id','qtd']);
+        //print_r($qtd);
+        //print_r($request['id']);
+        if(is_null($gas)) {
+            return $this->data['error'] = 'ID não encontrado';
+        }
+
+        if(!$validator->fails()){
+            $gas->qtd = $gas->qtd - $qtd['qtd'];
+            $gas->save();
+            $data = [
+                'id'=>$gas->id,
+                'type'=>$gas->type,
+                'price'=>$gas->price,
+                'qtd'=>$gas->qtd,
+                'updated_at'=>$gas->updated_at 
+            ];
+            return response()->json($data);
+        } else {
+            return $this->data['error'] = $validator->errors()->first();
+        }
     }
 }
