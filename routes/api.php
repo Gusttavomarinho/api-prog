@@ -23,9 +23,12 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::get('/gas',[GasController::class,'index']);
 Route::get('/gas/{id}',[GasController::class,'show']);
 
+
 //Rotas POST
 
 Route::post('/gas',[GasController::class,'create']);
+Route::post('/gas/soma',[GasController::class,'sumQtd']);
+Route::post('/gas/sub',[GasController::class,'subQtd']);
 
 ////Rotas PUT
 
