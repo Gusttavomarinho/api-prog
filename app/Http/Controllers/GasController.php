@@ -151,4 +151,43 @@ class GasController extends Controller
         $gas = Gas::find($id);
         $gas->delete();
     }
+// # iniciado depois
+    public function sumQtd(Request $request) {
+        $gas = Gas::find($request['id']);
+        $qtd = $request->only(['id','qtd']);
+        //print_r($qtd);
+        //print_r($request['id']);
+        if($gas){
+            $gas->qtd = $gas->qtd + $qtd['qtd'];
+            $gas->save();
+            $data = [
+                'id'=>$gas->id,
+                'type'=>$gas->type,
+                'price'=>$gas->price,
+                'qtd'=>$gas->qtd,
+                'updated_at'=>$gas->updated_at 
+            ];
+            return response()->json($data);
+        }
+
+    }
+
+        public function subQtd(Request $request) {
+            $gas = Gas::find($request['id']);
+            $qtd = $request->only(['id','qtd']);
+            //print_r($qtd);
+            //print_r($request['id']);
+            if($gas){
+                $gas->qtd = $gas->qtd - $qtd['qtd'];
+                $gas->save();
+                $data = [
+                    'id'=>$gas->id,
+                    'type'=>$gas->type,
+                    'price'=>$gas->price,
+                    'qtd'=>$gas->qtd,
+                    'updated_at'=>$gas->updated_at 
+                ];
+                return response()->json($data);
+            }
+    }
 }
